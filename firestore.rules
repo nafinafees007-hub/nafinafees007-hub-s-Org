@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: research_sessions
+    // Document ID: auto-generated
+    // Fields:
+    //   - uid: string (required) - Owner's user ID
+    //   - query: string (required) - The research topic
+    //   - result: map (required) - The AI-generated research data
+    //   - createdAt: timestamp (required) - When it was saved
+    //
+    // Collection: projects
+    // Document ID: auto-generated
+    // Fields:
+    //   - uid: string (required) - Owner's user ID
+    //   - name: string (required) - Project name
+    //   - description: string (optional) - Project description
+    //   - files: list (optional) - Uploaded files
+    //   - links: list (optional) - Research links
+    //   - analysis: map (optional) - Aggregated analysis
+    //   - createdAt: timestamp (required) - When it was created
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isValidResearchSession(data) {
+      return data.keys().hasAll(['uid', 'query', 'result', 'createdAt']) &&
+             data.uid is string &&
+             data.uid == request.auth.uid &&
+             data.query is string && data.query.size() > 0 && data.query.size() < 5000 &&
+             data.result is map &&
+             (data.createdAt == request.time || data.createdAt is timestamp);
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['uid', 'name', 'createdAt']) &&
+             data.uid is string &&
+             data.uid == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             (data.createdAt == request.time || data.createdAt is timestamp);
+    }
+
+    match /research_sessions/{sessionId} {
+      allow read: if isAuthenticated() && isDocOwner();
+      allow create: if isAuthenticated() && isValidResearchSession(request.resource.data);
+      allow delete: if isAuthenticated() && isDocOwner();
+      allow update: if false;
+    }
+
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && isDocOwner();
+      allow create: if isAuthenticated() && isValidProject(request.resource.data);
+      allow update: if isAuthenticated() && isDocOwner() && isValidProject(request.resource.data);
+      allow delete: if isAuthenticated() && isDocOwner();
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

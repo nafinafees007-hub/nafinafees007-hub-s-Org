@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "ResearchSession": {
+      "title": "Research Session",
+      "description": "A saved research session containing the query and the AI-generated results.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user ID of the owner."
+        },
+        "query": {
+          "type": "string",
+          "description": "The research query or topic."
+        },
+        "result": {
+          "type": "object",
+          "description": "The full research result object."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the research was saved."
+        }
+      },
+      "required": ["uid", "query", "result", "createdAt"]
+    },
+    "Project": {
+      "title": "Research Project",
+      "description": "A research project containing multiple files and links for aggregated analysis.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user ID of the owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of the project."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "mimeType": { "type": "string" },
+              "data": { "type": "string" }
+            }
+          },
+          "description": "List of uploaded files (base64 data)."
+        },
+        "links": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of research links."
+        },
+        "analysis": {
+          "type": "object",
+          "description": "The aggregated analysis result."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the project was created."
+        }
+      },
+      "required": ["uid", "name", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/research_sessions/{sessionId}": {
+      "schema": "ResearchSession",
+      "description": "Collection of saved research sessions."
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Collection of research projects."
+    }
+  }
+}
