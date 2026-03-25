@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build",
+    "build": "vite build && tsc --noEmit",
     "preview": "vite preview",
+    "start": "node -r dotenv/config dist-server/server.cjs",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
